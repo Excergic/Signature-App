@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signature</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: Arial, sans-serif;
+        }
+
+        .text-related-div{
+            display: flex;
+            justify-content: space-evenly;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .heading{
+            display: flex;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .heading h1 {
+            font-family: 'Dancing Script', cursive;
+            color: #2c3e50;
+            margin: 0;
+            white-space: nowrap;
+            width: 250px;
+        }
+
+        #sign-canvas{
+            border: 2px solid #2c3e50;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            margin-top: 20px;
+        }
+
+        .buttons{
+            display: flex;
+            justify-content: space-evenly;
+            margin-top: 20px;
+        }
+
+        .clear-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        #btn-danger {
+            background-color: #ff6b6b;
+            color: white;
+        }
+
+        #btn-success {
+            background-color: #4ecdc4;
+            color: white;
+        }
+
+        #btn-retrive {
+            background-color: #45b7d1;
+            color: white;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .text input, .text select {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #2c3e50;
+        }
+
+        .text p {
+            color: #2c3e50;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="heading">
+        <h1>Signature App</h1>
+    </div>
+    <div class="text-related-div">
+        <div class="text">
+            <p>Text Color</p>
+            <input class="form-control" type="color" id="text-color">  
+        </div>
+        <div class="text">
+            <p>Background Color</p>
+            <input class="form-control" type="color" id="canvas-color">
+        </div>
+        <div class="text">
+            <p>Font Size</p>
+            <select id="font-size">
+                <option value="10">10px</option>
+                <option value="20">20px</option>
+                <option value="30">30px</option>
+                <option value="40">40px</option>
+                <option value="50">50px</option>
+            </select>
+        </div>
+    </div>
+    <div class="canvas">
+        <center>
+            <canvas id="sign-canvas" width="1000" height="400"></canvas>
+        </center>   
+    </div>
+    <div class="buttons">
+        <button class="clear-btn" id="btn-danger">Clear</button>
+        <button class="clear-btn" id="btn-success">Save and Download</button>
+        <button class="clear-btn" id="btn-retrive">Retrieve Previously Saved</button>
+    </div>
+</body>
+<script>
+    // Js for canvas
+    const canvas = document.getElementById("sign-canvas");
+    const ctx = canvas.getContext("2d");
+
+    // js for color picker
+    const colorPicker = document.getElementById("text-color"); // input color picker
+    const bgColorPicker = document.getElementById("canvas-color"); // background color picker
+    const fontSizeSelect = document.getElementById("font-size"); // font size selector
+    const heading = document.querySelector('.heading h1'); // Get heading element
+    
+    let currentColor = colorPicker.value;
+    let currentBgColor = "#ffffff"; // Set default background color to white
+    bgColorPicker.value = currentBgColor; // Set the color picker to white
+    let currentFontSize = fontSizeSelect.value;
+    let isDrawing = false; // flag to track is writing
+
+    // Set initial background color
+    ctx.fillStyle = currentBgColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // update a current color when user selects new color
+    colorPicker.addEventListener('input', () => {
+        currentColor = colorPicker.value;
+    });
+
+    // update background color when user selects new color
+    bgColorPicker.addEventListener('input', () => {
+        currentBgColor = bgColorPicker.value;
+        ctx.fillStyle = currentBgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // update font size when user selects new size
+    fontSizeSelect.addEventListener('change', () => {
+        currentFontSize = fontSizeSelect.value;
+        ctx.lineWidth = currentFontSize / 5; // Adjust line width based on font size
+    });
+
+    canvas.addEventListener('mousedown', (event) => {
+        isDrawing = true;
+        ctx.beginPath();
+        ctx.moveTo(getMouseX(event), getMouseY(event));
+    });
+
+    canvas.addEventListener('mousemove', (event) => {
+        if(isDrawing){
+            ctx.strokeStyle = currentColor;
+            ctx.lineCap = 'round';
+            ctx.lineTo(getMouseX(event), getMouseY(event));
+            ctx.stroke();
+        }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+        ctx.closePath();
+    });
+
+    // mouse position calculation
+    function getMouseX(event){
+        const rect = canvas.getBoundingClientRect();
+        return event.clientX - rect.left;
+    }
+
+    function getMouseY(event){
+        const rect = canvas.getBoundingClientRect();
+        return event.clientY - rect.top;
+    }
+
+    // Clear canvas functionality
+    document.getElementById('btn-danger').addEventListener('click', () => {
+        ctx.fillStyle = currentBgColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    });
+
+    // Save and download functionality 
+    document.getElementById('btn-success').addEventListener('click', () => {
+        // Save to localStorage
+        localStorage.setItem('savedSignature', canvas.toDataURL());
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.download = 'signature.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+
+    // Retrieve previously saved signature
+    document.getElementById('btn-retrive').addEventListener('click', () => {
+        const savedSignature = localStorage.getItem('savedSignature');
+        if (savedSignature) {
+            const img = new Image();
+            img.onload = () => {
+                ctx.fillStyle = currentBgColor;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = savedSignature;
+        } else {
+            alert('No saved signature found!');
+        }
+    });
+
+</script>
+</html>
